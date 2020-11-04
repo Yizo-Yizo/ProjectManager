@@ -1,6 +1,5 @@
 //This class generate an invoice if the fee charged is not fully paid and displays it
 //with customers details
-package Task7;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -10,22 +9,9 @@ import java.io.PrintWriter;
 
 public class FinaliseProject {
 	
-	String name;
-	String telephoneNumber;
-	String emailAddress;
-	String physicalAddress;
-	double feeCharged;
-	double amountPaid;
 
 	public FinaliseProject(String name, String telephoneNumber, String emailAddress,
 			String physicalAddress, float feeCharged, float amountPaid) {
-		
-		this.name = name;
-		this.telephoneNumber = telephoneNumber;
-		this.emailAddress = emailAddress;
-		this.physicalAddress = physicalAddress;
-		this.feeCharged = feeCharged;
-		this.amountPaid = amountPaid;
 		
 	}
 	

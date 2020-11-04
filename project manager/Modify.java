@@ -1,5 +1,4 @@
 //This class modifies used to modify either person or project
-package Task7;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -40,6 +39,7 @@ public void ModifyPeopleDetails(String currentContent, String updatedContent) {
            
         catch (Exception ex)
         {
+			System.out.println("Error occured!")
             ex.printStackTrace();
         }
     	
@@ -85,6 +85,7 @@ public void ModifyPeopleDetails(String currentContent, String updatedContent) {
        
 		catch (Exception ex)
 		{
+			System.out.println("Error occured!")
 			ex.printStackTrace();
 		}
 	
