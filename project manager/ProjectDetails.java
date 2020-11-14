@@ -3,21 +3,16 @@
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Date;
 
 public class ProjectDetails {
 		
-		public ProjectDetails(String projectNumber, String projectName, String buildingType, int erfNumber, 
-				float feeCharged, float amountPaid, Date date) {
-			
-		}
-		
-		public void saveProject(String projectNumber, String projectName, String buildingType, int erfNumber, float feeCharged, float amountPaid, Date date) {
+		public void saveProject(String projectNumber, String projectName, String buildingType, int erfNumber, float feeCharged, 
+		float amountPaid, String date) {
 			
 			try {
-				FileWriter writeText = new FileWriter("ProjectFile.txt");
+				FileWriter writeText = new FileWriter("ProjectFile.txt", true);
 				PrintWriter printWriter = new PrintWriter(writeText);
-		        printWriter.printf("%s, %s, %s, %s, %s, %s, %s",projectNumber, projectName, buildingType, erfNumber, feeCharged, amountPaid, date);
+		        printWriter.printf("%s, %s, %s, %s, %s, %s, %s\r\n",projectNumber, projectName, buildingType, erfNumber, feeCharged, amountPaid, date);
 		        writeText.close();
 		        
 		        System.out.println("\nSuccessfully caputured information.\n");

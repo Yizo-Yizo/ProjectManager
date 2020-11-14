@@ -1,105 +1,56 @@
-//This class modifies used to modify either person or project
+//This class modifies information of a chosen project
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.FileWriter;
-import java.util.ArrayList;
+import java.io.InputStreamReader;
 
 public class Modify {
-	ArrayList<String> lines = new ArrayList<String>();
-    String line = null;
     
-public void ModifyPeopleDetails(String currentContent, String updatedContent) {
+public void ModifyDetails(String updatedContent, String projectNumber, int updateNumber, String updatedInfo) {
     	
     	try
         {
-            File pfile = new File("PeopleFile.txt");
-            FileReader contentFile = new FileReader(pfile);
-            BufferedReader contents = new BufferedReader(contentFile);
+			FileInputStream fileStream = new FileInputStream("CompletedProject.txt");
+			BufferedReader reader = new BufferedReader(new InputStreamReader(fileStream));
+			String line;
+			StringBuilder fileContent = new StringBuilder();
             
-            while ((line = contents.readLine()) != null)
-            {
-                if (line.contains(currentContent))
-                    line = line.replace(currentContent, updatedContent);
-                lines.add(line);
-            }
-            contents.close();
-            contentFile.close();
-            
-            FileWriter fileWriter = new FileWriter(pfile);
-            BufferedWriter out = new BufferedWriter(fileWriter);
-            for(String s: lines) {
-            	out.write(s);
-            out.flush();
-            }
-            out.close();
-        }
-           
+            while((line = reader.readLine()) != null) {
+				
+				String info[] = line.split(",");
+				
+				if(info.length > 0){
+					//Getting specific line in a text file and modifying information
+					if(info[0].equals(projectNumber)) {
+						
+						info[updateNumber] = updatedInfo;
+						String newLine = info[0] + "," + info[1] + "," + info[2] + "," + info[3] + "," + info[4] + "," + info[5] + "," + info[6] + "," + info[7] 
+								+ "," + info[8] + "," + info[9] + "," + info[10] + "," + info[11] + "," + info[12] + "," + info[13]; 
+						
+						fileContent.append(newLine);
+						fileContent.append("\n");
+						
+					}
+					else {
+						
+						fileContent.append(line);
+						fileContent.append("\n");
+					}
+				}
+			}
+			//Override with updated content
+			FileWriter writer = new FileWriter("CompletedProject.txt");
+			BufferedWriter bufferedWriter = new BufferedWriter(writer);
+			bufferedWriter.write(fileContent.toString());
+			bufferedWriter.close();
+			reader.close();
+		}
         catch (Exception ex)
         {
-			System.out.println("Error occured!")
+			System.out.println("Error occured!");
             ex.printStackTrace();
         }
-    	
-    	try{
-			FileReader people = new FileReader("PeopleFile.txt");
-			BufferedReader peopleReader = new BufferedReader(people);
-			String person="";
-			person = peopleReader.readLine();
-			System.out.println(person);
-			peopleReader.close();
-			
-			System.out.println("Successfully caputured information.");
-			}catch(Exception ex) {
-				System.out.println("Error: " + ex);
-			} 
-    }
-
-	public void ModifyProjectDetails(String currentContents, String updatedContents) {
-	
-		try
-		{
-			File pfile = new File("ProjectFile.txt");
-			FileReader contentFile = new FileReader(pfile);
-			BufferedReader contents = new BufferedReader(contentFile);
-        
-			while ((line = contents.readLine()) != null)
-			{
-				if (line.contains(currentContents))
-					line = line.replace(currentContents, updatedContents);
-				lines.add(line);
-			}
-			contents.close();
-			contentFile.close();
-        
-			FileWriter fileWriter = new FileWriter(pfile);
-			BufferedWriter out = new BufferedWriter(fileWriter);
-			for(String s: lines) {
-				out.write(s);
-				out.flush();
-			}
-			out.close();
-		}
-       
-		catch (Exception ex)
-		{
-			System.out.println("Error occured!")
-			ex.printStackTrace();
-		}
-	
-		try{
-			FileReader people = new FileReader("ProjectFile.txt");
-			BufferedReader peopleReader = new BufferedReader(people);
-			String person="";
-			person = peopleReader.readLine();
-			System.out.println(person);
-			peopleReader.close();
-		
-			System.out.println("Successfully updated information.");
-			}catch(Exception ex) {
-				System.out.println("Error: " + ex);
-			} 
-		}
+	}
 }

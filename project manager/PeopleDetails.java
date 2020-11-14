@@ -6,17 +6,12 @@ import java.io.PrintWriter;
 
 public class PeopleDetails {
 	
-	public PeopleDetails(String name, String telephoneNumber, String emailAddress,
-			String physicalAddress) {
-		
-	}
-	
 	public void savePerson(String name, String telephoneNumber, String emailAddress, String physicalAddress) {
 		
 		try {
-			FileWriter writeText = new FileWriter("PeopleFile.txt");
+			FileWriter writeText = new FileWriter("PeopleFile.txt", true);
 			PrintWriter printWriter = new PrintWriter(writeText);
-	        printWriter.printf("%s, %s, %s, %s",name, telephoneNumber, emailAddress, physicalAddress);
+	        printWriter.printf("%s, %s, %s, %s\r\n",name, telephoneNumber, emailAddress, physicalAddress);
 	        writeText.close();
 	        
 	        System.out.println("\nSuccessfully captured information.\n");
