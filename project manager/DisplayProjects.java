@@ -1,185 +1,222 @@
-//This class contains methods that allows a user to display relevant information
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Scanner;
+// This class contains methods that displays all projects information, particular chosen information etc
+package level03Task08;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class DisplayProjects {
 	
-	public DisplayProjects() {
+	public static void displayAllProjects(Statement statement)throws
+	SQLException{
 		
+		// Querying and creating a direct line to the database for running our queries
+		ResultSet results = statement.executeQuery("SELECT project_details.project_number, personal_details.name, personal_details.phone_number, "
+				+ "personal_details.email, personal_details.home_address, project_details.building_type, project_details.fee, project_details.due_date "
+				+ "FROM personal_details "
+				+ "INNER JOIN project_details "
+				+ "ON project_details.project_number = personal_details.id;");
+		
+		//Printing particular columns data
+		while(results.next()) {
+			System.out.printf("\nProject Number		: %s\n"
+	        		+ "Customer Name		: %s\n"
+	        		+ "Telephone Number	: %s\n"
+	        		+ "Email Address		: %s\n"
+	        		+ "Physical Address	: %s\n"
+	        		+ "Building Type		: %s\n"
+	        		+ "Fee charged 		: R%s\n"
+	        		+ "Due date		: %s\n", results.getInt("project_number"), results.getString("name"), results.getString("phone_number"), 
+	        		results.getString("email"), results.getString("home_address"), results.getString("building_type"), results.getInt("fee"),
+	        		results.getString("due_date"));
+			
+		}
+
 	}
 	
-	public void displayAllProjects() {
-		
-		try{
-			
-			FileReader projectFile = new FileReader("CompletedProject.txt");
-			BufferedReader projectReader = new BufferedReader(projectFile);
-			String line="";
-			line = projectReader.readLine();
-			while(line != null) {
-				String[] info = line.split(",");
-				System.out.printf("\nProject Number		: %s\n"
-		        		+ "Customer Name		:%s\n"
-		        		+ "Telephone Number	:%s\n"
-		        		+ "Email Address		:%s\n"
-		        		+ "Physical Address	:%s\n"
-		        		+ "Building Type		:%s\n"
-		        		+ "Fee charged 		: R%s\n", info[0], info[1], info[2], info[3], info[4], info[5], info[8]);
-				line = projectReader.readLine();
-			}
-			projectReader.close();
-			}catch(Exception ex) {
-				System.out.println("Error: " + ex);
-			}
-	}
-	 //Generating an invoice 
-	public void displayInvoice(float feeCharged, float amountPaid, String projectNumber) {
-		
-		System.out.println("\nINVOICE:\n");
-		
-		if(amountPaid <= feeCharged) {
-			File file = new File("CompletedProject.txt");
-			Scanner scanner = null;
-			try {
-				scanner = new Scanner(file);
-				while(scanner.hasNext()) {
-					String line = scanner.nextLine();
-					String[] info = line.split(",");
-					int projectNum = Integer.parseInt(projectNumber);
-					int index = Integer.parseInt(info[0]);
-					if(index == projectNum) {
-						
-						System.out.printf("\nName				:%s\n"
-					        		+ "Telephone Number		:%s\n"
-					        		+ "Email Address			:%s\n"
-					        		+ "Physical Address		:%s\n"
-					        		+ "Outstanding Amount		: R%s\n", info[1], info[2], info[3], info[4], info[10]);
-					}
-				}
-			}
-			catch(Exception ex) {
-				System.out.println("Error: " + ex);
-			}
-		}
-		else if(amountPaid == feeCharged) {
-			
-			System.out.println("Amount is fully paid.");
-		}
-		else {
-			System.out.println("Incosistent amounts entered");
-		}
-		
-	}
-	public void displayPastDueDateProjects(){
+	public static void displayChosenProject(int projectNumber) {
 		
 		try {
-			File file = new File("CompletedProject.txt");
-			Scanner scanner = null;
-			scanner = new Scanner(file);
 			
-			LocalDate date = LocalDate.now();
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-			String dateNow = date.format(formatter);
-			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-			Date todaysDate = dateFormat.parse(dateNow);
+			//Connecting to the database
+			Connection connection = DriverManager.getConnection(
+					"jdbc:mysql://localhost:3306/poisepms_db?useSSL=false",
+					"otheruser",
+					"swordfish");
+			// Querying and creating a direct line to the database for running our queries
+			String query = "SELECT project_details.project_number, personal_details.name, personal_details.phone_number, personal_details.email, personal_details.home_address, project_details.building_type, project_details.fee, project_details.due_date"
+					+ " FROM personal_details"
+					+ " INNER JOIN project_details"
+					+ " ON project_details.project_number = personal_details.id"
+					+ " WHERE project_details.project_number = " + projectNumber + ";";
 			
-			while(scanner.hasNext()) {
-				String line = scanner.nextLine();
-				String[] info = line.split(",");
-				Date dueDate = dateFormat.parse(info[13]);
+			PreparedStatement preparedStatement = connection.prepareStatement(query);
+			
+			ResultSet results = preparedStatement.executeQuery();
+			if(results.next()) {
 				
-				if(todaysDate.after(dueDate)) {
-					System.out.printf("\nProject Number		: %s\n"
-							+ "Customer name		:%s\n"
-				        		+ "Telephone Number	:%s\n"
-				        		+ "Email Address		:%s\n"
-				        		+ "Physical Address	:%s\n"
-				        		+ "Project name		:%s\n"
-				        		+ "Building type		:%s\n"
-				        		+ "ERF number		:%s\n"
-				        		+ "Fee charged		: R%s\n"
-				        		+ "Amount Paid		: R%s\n"
-				        		+ "Outstanding Amount	: R%s\n", info[0], info[1], info[2], info[3], info[4], info[5], info[6],
-				        		info[7], info[8], info[9], info[10]);
-				}
+				// Printing out particular columns data
+				System.out.printf("\n1-Project Number	: %s\n"
+		        		+ "2-Customer Name		: %s\n"
+		        		+ "3-Telephone Number	: %s\n"
+		        		+ "4-Email Address		: %s\n"
+		        		+ "5-Physical Address	: %s\n"
+		        		+ "6-Building Type		: %s\n"
+		        		+ "7-Fee charged 		: R%s\n"
+		        		+ "8-Due date		: %s\n", results.getInt("project_number"), results.getString("name"), results.getString("phone_number"), 
+		        		results.getString("email"), results.getString("home_address"), results.getString("building_type"), results.getInt("fee"),
+		        		results.getString("due_date"));
 			}
-			scanner.close();
-		}catch(Exception e) {
-			System.out.println("An error occured.");
+			
+		}
+		catch(SQLException e) {
+			System.out.println("Error occured.");
 			e.printStackTrace();
 		}
-		
 	}
 	
-	public void displayIncompleteProjects(){
+	public static void incompleteProjects() {
 		
 		try {
-			File file = new File("CompletedProject.txt");
-			Scanner scanner = null;
-			scanner = new Scanner(file);
-			while(scanner.hasNext()) {
-				String line = scanner.nextLine();
-				if(line.contains("no")) {
-					String[] info = line.split(",");
-					System.out.printf("\nProject Number		: %s\n"
-							+ "Customer name		:%s\n"
-				        		+ "Telephone Number	:%s\n"
-				        		+ "Email Address		:%s\n"
-				        		+ "Physical Address	:%s\n"
-				        		+ "Project name		:%s\n"
-				        		+ "Building type		:%s\n"
-				        		+ "ERF number		:%s\n"
-				        		+ "Fee charged		: R%s\n"
-				        		+ "Amount Paid		: R%s\n"
-				        		+ "Outstanding Amount	: R%s\n", info[0], info[1], info[2], info[3], info[4], info[5], info[6],
-				        		info[7], info[8], info[9], info[10]);
-				}
-			}
-			scanner.close();
-		}catch(Exception e) {
+			//Connecting to the database
+			Connection connection = DriverManager.getConnection(
+					"jdbc:mysql://localhost:3306/poisepms_db?useSSL=false",
+					"otheruser",
+					"swordfish"
+					);
 			
-		System.out.println("An error occured.");
-		e.printStackTrace();
-		}
-	}
-	
-	public void displayChosenProject(String projectNumber) {
-		
-		File file = new File("CompletedProject.txt");
-		Scanner scanner = null;
-		try {
-			scanner = new Scanner(file);
-			while(scanner.hasNext()) {
-				String line = scanner.nextLine();
-				String[] info = line.split(",");
-				int projectNum = Integer.parseInt(projectNumber);
-				int index = Integer.parseInt(info[0]);
-				if(index == projectNum) {
-					
-					System.out.printf("\n1 - Customer name	:%s\n"
-				        		+ "2 - Telephone Number	:%s\n"
-				        		+ "3 - Email Address	:%s\n"
-				        		+ "4 - Physical Address	:%s\n"
-				        		+ "5 - Project name	:%s\n"
-				        		+ "6 - Building type	:%s\n"
-				        		+ "7 - ERF number		:%s\n"
-				        		+ "8 - Fee charged		: R%s\n"
-				        		+ "9 - Amount Paid		: R%s\n"
-				        		+ "10 - Outstanding Amount	: R%s\n", info[1], info[2], info[3], info[4], info[5], info[6],
-				        		info[7], info[8], info[9], info[10]);
-				}
+			// Create a direct line to the database for running our queries
+			Statement statement = connection.createStatement();
+			
+			String query = "SELECT project_details.project_number, personal_details.name, personal_details.phone_number,"
+					+ "personal_details.email, personal_details.home_address, project_details.project_name, project_details.building_type, project_details.erf_number, "
+					+ "project_details.due_date, project_details.fee, project_details.amount_paid, project_details.outstanding_amount"
+					+ " FROM personal_details"
+					+ " INNER JOIN project_details"
+					+ " ON project_details.project_number = personal_details.id"
+					+ " WHERE project_details.completion_date = 0000-00-00";
+			System.out.println(query);
+			ResultSet results = statement.executeQuery(query); 
+			
+			// Printing particular columns data
+			while(results.next()) {
+				System.out.printf("\nProject Number		: %s\n"
+						+ "Customer name		: %s\n"
+			        		+ "Telephone Number	: %s\n"
+			        		+ "Email Address		: %s\n"
+			        		+ "Physical Address	: %s\n"
+			        		+ "Project name		: %s\n"
+			        		+ "Building type		: %s\n"
+			        		+ "ERF number		: %s\n"
+			        		+ "Due date		: %s\n"
+			        		+ "Fee charged		: R%s\n"
+			        		+ "Amount Paid		: R%s\n"
+			        		+ "Outstanding Amount	: R%s\n", results.getInt("project_number"), results.getString("name"), results.getString("phone_number"), 
+		        		results.getString("email"), results.getString("home_address"), results.getString("project_name"), results.getString("building_type"), results.getString("erf_number"), 
+		        		results.getString("due_date"), results.getFloat("fee"), results.getFloat("amount_paid"), results.getFloat("outstanding_amount"));
 			}
 		}
-		catch(Exception ex) {
-			System.out.println("Error: " + ex);
+		catch(SQLException e) {
+			
+			System.out.println("Error ocurred!");
+			e.printStackTrace();
 		}
-	
 	}
-
+	
+	public static void displayPastDueDateProjects(String completionDate) {
+		
+		try {
+			//Connecting to the database
+			Connection connection = DriverManager.getConnection(
+					"jdbc:mysql://localhost:3306/poisepms_db?useSSL=false",
+					"otheruser",
+					"swordfish"
+					);
+			
+			// Querying and creating a direct line to the database for running our queries
+			String query = "SELECT project_details.project_number, personal_details.name, personal_details.phone_number,"
+					+ "personal_details.email, personal_details.home_address, project_details.project_name, project_details.building_type, project_details.erf_number, "
+					+ "project_details.due_date, project_details.fee, project_details.amount_paid, project_details.outstanding_amount"
+					+ " FROM personal_details"
+					+ " INNER JOIN project_details"
+					+ " ON project_details.project_number = personal_details.id"
+					+ " WHERE project_details.due_date < ?";
+					
+			PreparedStatement preparedStatement = connection.prepareStatement(query);
+			preparedStatement.setString(1, completionDate);
+			
+			ResultSet results = preparedStatement.executeQuery();
+			
+			// Printing particular columns data
+			while(results.next()) {
+				System.out.printf("\nProject Number		: %s\n"
+						+ "Customer name		: %s\n"
+			        		+ "Telephone Number	: %s\n"
+			        		+ "Email Address		: %s\n"
+			        		+ "Physical Address	: %s\n"
+			        		+ "Project name		: %s\n"
+			        		+ "Building type		: %s\n"
+			        		+ "ERF number		: %s\n"
+			        		+ "Due date		: %s\n"
+			        		+ "Fee charged		: R%s\n"
+			        		+ "Amount Paid		: R%s\n"
+			        		+ "Outstanding Amount	: R%s\n", results.getInt("project_number"), results.getString("name"), results.getString("phone_number"), 
+		        		results.getString("email"), results.getString("home_address"), results.getString("project_name"), results.getString("building_type"), results.getString("erf_number"), 
+		        		results.getString("due_date"), results.getFloat("fee"), results.getFloat("amount_paid"), results.getFloat("outstanding_amount"));
+			}
+		}
+		catch(SQLException e) {
+			
+			System.out.println("Error ocurred!");
+			e.printStackTrace();
+		}
+	}
+	public static void displayInvoice(int projectNumb) {
+		
+		try {
+			//Connecting to the database
+			Connection connection = DriverManager.getConnection(
+					"jdbc:mysql://localhost:3306/poisepms_db?useSSL=false",
+					"otheruser",
+					"swordfish");
+			
+			// Querying and creating a direct line to the database for running our queries
+			String query = "SELECT project_details.project_number, personal_details.name, personal_details.phone_number,"
+					+ "personal_details.email, personal_details.home_address, project_details.project_name, project_details.building_type, project_details.erf_number, "
+					+ "project_details.due_date, project_details.fee, project_details.amount_paid, project_details.outstanding_amount"
+					+ " FROM personal_details"
+					+ " INNER JOIN project_details"
+					+ " ON project_details.project_number = personal_details.id"
+					+ " WHERE project_details.project_number = " + projectNumb + ";";
+			
+			PreparedStatement preparedStatement = connection.prepareStatement(query);
+			ResultSet results = preparedStatement.executeQuery();
+			
+			System.out.println("\nINVOICE");
+			// Printing particular columns data
+			if(results.next()) {
+				System.out.printf("\nProject Number		: %s\n"
+						+ "Customer name		: %s\n"
+			        		+ "Telephone Number	: %s\n"
+			        		+ "Email Address		: %s\n"
+			        		+ "Physical Address	: %s\n"
+			        		+ "Project name		: %s\n"
+			        		+ "Building type		: %s\n"
+			        		+ "ERF number		: %s\n"
+			        		+ "Due date		: %s\n"
+			        		+ "Fee charged		: R%s\n"
+			        		+ "Amount Paid		: R%s\n"
+			        		+ "Outstanding Amount	: R%s\n", results.getInt("project_number"), results.getString("name"), results.getString("phone_number"), 
+		        		results.getString("email"), results.getString("home_address"), results.getString("project_name"), results.getString("building_type"), results.getString("erf_number"), 
+		        		results.getString("due_date"), results.getFloat("fee"), results.getFloat("amount_paid"), results.getFloat("outstanding_amount"));
+			}
+		}
+		catch(SQLException e) {
+			System.out.println("Error occured.");
+			e.printStackTrace();
+		}
+	}
 }
